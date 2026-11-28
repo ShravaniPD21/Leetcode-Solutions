@@ -1,0 +1,54 @@
+Leetcode_3947:
+Solution:
+Python:
+
+class Solution:
+    def maximumSaleItems(self, items, budget):
+        n = len(items)
+
+        freq = [0] * (n + 1)
+        min_price = float('inf')
+
+        for f, p in items:
+            freq[f] += 1
+            min_price = min(min_price, p)
+
+        # Calculate bonus count once for each distinct factor
+        bonus = {}
+
+        for f in range(1, n + 1):
+            if freq[f] == 0:
+                continue
+
+            count = 0
+
+            for multiple in range(f, n + 1, f):
+                count += freq[multiple]
+
+            bonus[f] = count - 1
+
+        # Each bonus-generating purchase gives 2 items
+        candidates = []
+
+        for f, p in items:
+            if bonus[f] > 0 and p < 2 * min_price:
+                candidates.append((p, bonus[f]))
+
+        candidates.sort()
+
+        ans = 0
+
+        # Buy the cheapest bonus-generating copies first
+        for price, limit in candidates:
+            if budget < price:
+                break
+
+            take = min(limit, budget // price)
+
+            ans += 2 * take
+            budget -= take * price
+
+        # Spend the remaining budget on the cheapest item
+        ans += budget // min_price
+
+        return ans
